@@ -6,9 +6,11 @@
 
 
 #ifdef DEBUG
-    #define DEBUG_STR(var) printf("%s: (%s)\n", #var, var)
+    #define DEBUG_STR(var) printf("DEBUG STR %s: (%s)\n", #var, var)
+    #define DEBUG_CSV_LINE(var) printf("DEBUG CSV-LINE %s: ", #var); print_CSV_Line(var)
 #else
     #define DEBUG_STR(var)
+    #define DEBUG_CSV_LINE(var)
 #endif
 
 // thanks Tsoding
@@ -32,7 +34,7 @@ typedef struct CSV_Line {
 } CSV_Line;
 
 typedef struct CSV_File {
-    CSV_Line Headers;
+    CSV_Line header;
     CSV_Line *items;
     int count;
     int capacity;
@@ -54,20 +56,16 @@ CSV_Line string_to_CSV_Line(char *line) {
     const char delim[2] = ",";
     char *token;
 
-    DEBUG_STR(line);
-
+    // DEBUG_STR(line);
 
     token = strtok(line, delim);
     while (token != NULL) {
-        DEBUG_STR(token);
+        // DEBUG_STR(token);
 
         // dont worry about freeing stuff        
         char *new_string = calloc(strlen(token) + 1, sizeof(char));
-
         strcpy(new_string, token);
-
         da_append(&result, new_string);
-
         token = strtok(NULL, delim);
     }
 
@@ -79,11 +77,19 @@ CSV_File csv_to_CSV_File(const char *input_file) {
     FILE *ptr;
     char str_buff[256];
 
+    // TODO: check if the csv file is valid
+
     ptr = fopen(input_file, "r+");
     if (ptr == NULL) {
         printf("file can't be opened\n");
         exit(-1);
     }
+
+    // get headers
+    fgets(str_buff, 256, ptr);
+    result.header = string_to_CSV_Line(str_buff);
+    DEBUG_CSV_LINE(result.header);
+
 
     while (fgets(str_buff, 256, ptr) != NULL) {
         assert(strlen(str_buff) < 256 && "csv line length longer than buffer");
@@ -93,15 +99,11 @@ CSV_File csv_to_CSV_File(const char *input_file) {
         str_buff[strlen(str_buff) - 1] = '\0';
 
         CSV_Line line = string_to_CSV_Line(str_buff);
-
-        print_CSV_Line(line);
-
+        DEBUG_CSV_LINE(line);
         da_append(&result, line);
-
-        break;
-
-        // printf("str_buff: [%s]\n", str_buff);
     }
+
+    fclose(ptr);
 
     return result;
 }
