@@ -1,2 +1,10 @@
 #!/bin/bash
-gcc -o main main.c
+rm main.exe
+
+CFLAGS="-Wall -Wextra -pedantic"
+# CFLAGS+=" -Werror"
+
+# debug flag
+CFLAGS+=" -DDEBUG"
+
+gcc -o main.exe main.c $CFLAGS
