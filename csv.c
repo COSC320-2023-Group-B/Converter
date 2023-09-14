@@ -6,7 +6,7 @@
 
 
 #ifdef DEBUG
-    #define DEBUG_STR(var) { printf("DEBUG STR %s: (%s)\n", #var, var) }
+    #define DEBUG_STR(var) { printf("DEBUG STR %s: (%s)\n", #var, var); }
     #define DEBUG_CSV_LINE(var) { printf("DEBUG CSV-LINE %s: ", #var); print_CSV_Line(var); printf("\n"); }
     #define DEBUG_CSV_FILE(var) { printf("DEBUG CSV-FILE %s:\n", #var); print_CSV_File(var, true); }
 #else
@@ -42,24 +42,39 @@ typedef struct CSV_File {
     int capacity;
 } CSV_File;
 
-void print_CSV_Line(CSV_Line line) {
-    const char *delim = ", ";
-    for (size_t i = 0; i < line.count; i++) {
-        printf("%s%s", line.items[i], delim);
+const char *CSV_Line_to_string(CSV_Line line, const char *delim) {
+    assert(line.count > 0 && "cannot get string of empty line");
+
+    const char *str = calloc(256, sizeof(char));
+    char *str_ptr = (char *) str;
+
+    assert(str != NULL && "Buy more ram lol");
+
+    strcpy(str_ptr, line.items[0]); str_ptr += strlen(line.items[0]);
+    
+    for (size_t i = 1; i < line.count; i++) {
+        strcpy(str_ptr, delim); str_ptr += strlen(delim);
+        strcpy(str_ptr, line.items[i]); str_ptr += strlen(line.items[i]);
+
+        assert(str_ptr - str < 256 && "buffer not big enough");
     }
-    // remove final delim
-    for (size_t i = 0; i < strlen(delim); i++) printf("\b");
-    for (size_t i = 0; i < strlen(delim); i++) printf(" ");
+    
+    return str;
+}
+
+void print_CSV_Line(CSV_Line line) {
+    const char *str = CSV_Line_to_string(line, ", ");
+    printf("%s", str);
 }
 void print_CSV_File(CSV_File file, bool line_numbers) {
     print_CSV_Line(file.header);
     // dont know why we need this. think the header is weird
-    printf("\r");
+    sprintf(stdout, "\r");
     for (size_t i = 0; i < file.count; i++) {
         // line number
-        if (line_numbers) printf("%d: ", i);
+        if (line_numbers) sprintf(stdout, "%d: ", i);
         print_CSV_Line(file.items[i]);
-        printf("\n");
+        sprintf(stdout, "\n");
     }
 }
 
@@ -86,24 +101,25 @@ CSV_Line string_to_CSV_Line(char *line) {
 
 CSV_File csv_to_CSV_File(const char *input_file) {
     CSV_File result = {0};
-    FILE *ptr;
+    FILE *fptr;
     char str_buff[256];
 
     // TODO: check if the csv file is valid
 
-    ptr = fopen(input_file, "r+");
-    if (ptr == NULL) {
+    fptr = fopen(input_file, "r+");
+    if (fptr == NULL) {
         printf("file can't be opened\n");
         exit(-1);
     }
 
     // get headers
-    fgets(str_buff, 256, ptr);
+    fgets(str_buff, 256, fptr);
+    str_buff[strlen(str_buff) - 1] = '\0';
     result.header = string_to_CSV_Line(str_buff);
     DEBUG_CSV_LINE(result.header);
 
 
-    while (fgets(str_buff, 256, ptr) != NULL) {
+    while (fgets(str_buff, 256, fptr) != NULL) {
         assert(strlen(str_buff) < 256 && "csv line length longer than buffer");
         assert(str_buff[strlen(str_buff) - 1] == '\n' && "csv line separated by tabs");
 
@@ -115,7 +131,31 @@ CSV_File csv_to_CSV_File(const char *input_file) {
         da_append(&result, line);
     }
 
-    fclose(ptr);
+    fclose(fptr);
 
     return result;
+}
+
+void CSV_File_to_csv(CSV_File file, const char *out_path) {
+    FILE *fptr;
+    const char *buff;
+    const char *delim = ",";
+
+    fptr = fopen(out_path, "w");
+    assert(fptr != NULL && "Could not create file");
+
+    // put header
+    buff = CSV_Line_to_string(file.header, delim);
+    fprintf(fptr, "%s\n", buff);
+
+    buff = CSV_Line_to_string(file.items[0], delim);
+    fprintf(fptr, "%s\n", buff);
+
+    for (size_t i = 1; i < file.count; i++) {
+        buff = CSV_Line_to_string(file.items[i], delim);
+        fprintf(fptr, "%s\n", buff);
+    }
+    
+
+    fclose(fptr);
 }
