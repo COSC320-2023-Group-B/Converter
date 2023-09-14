@@ -31,15 +31,15 @@
 
 typedef struct CSV_Line {
     const char **items;
-    int count;
-    int capacity;
+    size_t count;
+    size_t capacity;
 } CSV_Line;
 
 typedef struct CSV_File {
     CSV_Line header;
     CSV_Line *items;
-    int count;
-    int capacity;
+    size_t count;
+    size_t capacity;
 } CSV_File;
 
 const char *CSV_Line_to_string(CSV_Line line, const char *delim) {
@@ -64,17 +64,17 @@ const char *CSV_Line_to_string(CSV_Line line, const char *delim) {
 
 void print_CSV_Line(CSV_Line line) {
     const char *str = CSV_Line_to_string(line, ", ");
-    printf("%s", str);
+    fprintf(stdout, "%s", str);
 }
 void print_CSV_File(CSV_File file, bool line_numbers) {
     print_CSV_Line(file.header);
     // dont know why we need this. think the header is weird
-    sprintf(stdout, "\r");
+    fprintf(stdout, "\r");
     for (size_t i = 0; i < file.count; i++) {
         // line number
-        if (line_numbers) sprintf(stdout, "%d: ", i);
+        if (line_numbers) fprintf(stdout, "%d: ", i);
         print_CSV_Line(file.items[i]);
-        sprintf(stdout, "\n");
+        fprintf(stdout, "\n");
     }
 }
 

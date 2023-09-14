@@ -11,7 +11,7 @@ int main() {
     CSV_File input_csv = csv_to_CSV_File(file_path);
     // DEBUG_CSV_FILE(input_csv);
 
-    const char *string = CSV_Line_to_string(input_csv.header, ", ");
+    // const char *string = CSV_Line_to_string(input_csv.header, ", ");
 
     CSV_File_to_csv(input_csv, output_path);
 
