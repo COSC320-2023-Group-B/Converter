@@ -6,11 +6,13 @@
 
 
 #ifdef DEBUG
-    #define DEBUG_STR(var) printf("DEBUG STR %s: (%s)\n", #var, var)
-    #define DEBUG_CSV_LINE(var) printf("DEBUG CSV-LINE %s: ", #var); print_CSV_Line(var)
+    #define DEBUG_STR(var) { printf("DEBUG STR %s: (%s)\n", #var, var) }
+    #define DEBUG_CSV_LINE(var) { printf("DEBUG CSV-LINE %s: ", #var); print_CSV_Line(var); printf("\n"); }
+    #define DEBUG_CSV_FILE(var) { printf("DEBUG CSV-FILE %s:\n", #var); print_CSV_File(var); }
 #else
     #define DEBUG_STR(var)
     #define DEBUG_CSV_LINE(var)
+    #define DEBUG_CSV_FILE(var)
 #endif
 
 // thanks Tsoding
@@ -48,7 +50,17 @@ void print_CSV_Line(CSV_Line line) {
     // remove final delim
     for (size_t i = 0; i < strlen(delim); i++) printf("\b");
     for (size_t i = 0; i < strlen(delim); i++) printf(" ");
-    printf("\n");
+}
+void print_CSV_File(CSV_File file) {
+    print_CSV_Line(file.header);
+    // dont know why we need this. think the header is weird
+    printf("\r");
+    for (size_t i = 0; i < file.count; i++) {
+        // line number
+        printf("%d: ", i);
+        print_CSV_Line(file.items[i]);
+        printf("\n");
+    }
 }
 
 CSV_Line string_to_CSV_Line(char *line) {
@@ -99,7 +111,7 @@ CSV_File csv_to_CSV_File(const char *input_file) {
         str_buff[strlen(str_buff) - 1] = '\0';
 
         CSV_Line line = string_to_CSV_Line(str_buff);
-        DEBUG_CSV_LINE(line);
+        // DEBUG_CSV_LINE(line);
         da_append(&result, line);
     }
 
@@ -112,12 +124,13 @@ CSV_File csv_to_CSV_File(const char *input_file) {
 int main() {
     printf("Hello, World!\n");
 
-    const char *file_path = "SampleVitalsLog1.csv";
-    // const char *file_path = "nathanhall1_vitals_2023-09-14_08-48-161.csv";
+    // const char *file_path = "SampleVitalsLog1.csv";
+    const char *file_path = "nathanhall1_vitals_2023-09-14_08-48-161.csv";
     
     // const char *output_path = "formatted.csv";
 
     CSV_File input_csv = csv_to_CSV_File(file_path);
+    DEBUG_CSV_FILE(input_csv);
 
     return 0;
 }
