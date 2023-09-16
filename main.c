@@ -34,7 +34,7 @@ CSV_File normalize_Timestamps(CSV_File input_file) {
         int normalized_timestamp = timestamp - first_timestamp;
 
         char *timestamp_string = calloc(256, sizeof(char));
-        sprintf(timestamp_string, "%d\0", normalized_timestamp);
+        sprintf(timestamp_string, "%d", normalized_timestamp);
         // DEBUG_STR(timestamp_string);
 
         da_append(&new_line, timestamp_string);
