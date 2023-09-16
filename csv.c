@@ -6,10 +6,12 @@
 
 
 #ifdef DEBUG
-    #define DEBUG_STR(var) { printf("DEBUG STR %s: (%s)\n", #var, var); }
-    #define DEBUG_CSV_LINE(var) { printf("DEBUG CSV-LINE %s: ", #var); print_CSV_Line(var); printf("\n"); }
-    #define DEBUG_CSV_FILE(var) { printf("DEBUG CSV-FILE %s:\n", #var); print_CSV_File(var, true); }
+    #define DEBUG_INT(var)      do { printf("DEBUG INT %s: (%d)\n", #var, var); } while (0)
+    #define DEBUG_STR(var)      do { printf("DEBUG STR %s: (%s)\n", #var, var); } while (0)
+    #define DEBUG_CSV_LINE(var) do { printf("DEBUG CSV-LINE %s: ", #var); print_CSV_Line(var); printf("\n"); } while (0)
+    #define DEBUG_CSV_FILE(var) do { printf("DEBUG CSV-FILE %s:\n", #var); print_CSV_File(var, true);        } while (0)
 #else
+    #define DEBUG_INT(var)
     #define DEBUG_STR(var)
     #define DEBUG_CSV_LINE(var)
     #define DEBUG_CSV_FILE(var)
@@ -24,7 +26,6 @@
             (da)->items = realloc((da)->items, (da)->capacity*sizeof(*(da)->items)); \
             assert((da)->items != NULL && "Buy more RAM lol");                       \
         }                                                                            \
-                                                                                     \
         (da)->items[(da)->count++] = (item);                                         \
     } while (0)
 
