@@ -9,7 +9,13 @@ def main():
 
 	# Load the data
 	inputPath = select_input_csv()
-	dates, times, systolics, diastolics, maps, heart_rates, respirations, as_values, sqes, timestamps = load_file(inputPath)
+	# dates, times, systolics, diastolics, maps, heart_rates, respirations, as_values, sqes, timestamps = load_csv(inputPath)
+	csv_file = load_csv(inputPath)
+
+	# botch until someone fixes this 
+	dates, times, systolics, diastolics, maps, heart_rates, respirations, as_values, sqes, timestamps = csv_file["Date"], csv_file["Time"], csv_file["Systolic (mmHg)"], csv_file["Diastolic (mmHg)"], csv_file["MAP (mmHg)"], csv_file["HeartRate (bpm)"], csv_file["Respiration (Bpm)"], csv_file["AS"], csv_file["SQE"], csv_file["TimeStamp (mS)"]
+	# make all ints
+	timestamps = [int(t) for t in timestamps]
 
 	# Adjust timestamps
 	adjusted_timestamps = []
@@ -33,39 +39,25 @@ def main():
 	tk.messagebox.showinfo("Process Complete", "The CSV data has been successfully formatted and saved!")
 
 
-def load_file(filename):
-	# Initialize arrays to store data
-	dates = []
-	times = []
-	systolics = []
-	diastolics = []
-	maps = []
-	heart_rates = []
-	respirations = []
-	as_values = []
-	sqes = []
-	timestamps = []
+def load_csv(filename):
+	# initialise csvs
+	csv_file = {}
 
 	with open(filename, 'r') as file:
 		reader = csv.reader(file)
 
-		# Skip the header
-		next(reader)
+		# get the header
+		csv_file["headers"] = next(reader)
+		# initialize headers in csv dict
+		for header in csv_file["headers"]:
+			csv_file[header] = []
 
 		# Process each row and store values in arrays
 		for row in reader:
-			dates.append(row[0])
-			times.append(row[1])
-			systolics.append(int(row[2]))
-			diastolics.append(int(row[3]))
-			maps.append(int(row[4]))
-			heart_rates.append(int(row[5]))
-			respirations.append(int(row[6]))
-			as_values.append(int(row[7]))
-			sqes.append(int(row[8]))
-			timestamps.append(int(row[9]))
+			for value, header in zip(row, csv_file["headers"]):
+				csv_file[header].append(value)
 
-	return dates, times, systolics, diastolics, maps, heart_rates, respirations, as_values, sqes, timestamps
+	return csv_file
 
 
 # filename string, header string, list of data arrays
