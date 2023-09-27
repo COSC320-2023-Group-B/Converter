@@ -78,11 +78,28 @@ class CSV_conversion_window(tk.Tk):
 
 		# Format the wanted data into a list of lists
 		# the [2:-1] is a shorthand, may expand out once we know exactly which data we required, for now we take all but the date and time
-		data = [[adjusted_timestamps[i]] + [csv_file[header][i] for header in csv_file["headers"][2:-1]] for i in range(len(adjusted_timestamps))]
+		data = [[adjusted_timestamps[i]] + [int(csv_file[header][i]) for header in csv_file["headers"][2:-1]] for i in range(len(adjusted_timestamps))]
+		
+		def lerp(a, b, interp):
+			return a + (b-a) * interp
+		interval = 500 # ms
+		lerped_data = []
+		timestamps = [entry[0] for entry in data]
+		for tick in range(0, adjusted_timestamps[-1], interval):
+			last_timestamp = min(filter(lambda v, t=tick: (v <= t), timestamps))
+			next_timestamp = max(filter(lambda v, t=tick: (v >= t), timestamps))
+			last_index = timestamps.index(last_timestamp)
+			next_index = timestamps.index(next_timestamp)
+			interp = (tick-last_timestamp)/(next_timestamp-last_timestamp)
+			lerp_data_entry = [tick]
+			for i in range(1, len(data[0])):
+				lerp_data_entry.append(int(lerp(data[last_index][i], data[next_index][i], interp)))
+			lerped_data.append(lerp_data_entry)
+
 
 		# Save the data
 		header = ["Adjusted Timestamp"] + csv_file["headers"][2:-1]	# [2:-1] is shorthand, see above
-		self.save_csv(output_path, header, data)
+		self.save_csv(output_path, header, lerped_data)
 
 		messagebox.showinfo("Success", "Conversion completed successfully!")
 
