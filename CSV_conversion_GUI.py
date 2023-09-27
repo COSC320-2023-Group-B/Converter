@@ -8,14 +8,15 @@ class CSV_conversion_window(tk.Tk):
 	def __init__(self):
 		super().__init__()
 		self.title("CSV Converter")
-		self.geometry("300x250")
+		self.geometry("400x300")
 		self.configure(background="#aaf")
 
-		# Initialize variables to store file paths
+		# Initialize variables to store conversion parameters
 		self.input_path = tk.StringVar(value="")
 		self.output_path = tk.StringVar(value="")
 		self.input_path_display = tk.StringVar(value="")
 		self.output_path_display = tk.StringVar(value="")
+		self.interval = tk.StringVar(value="620")
 
 		# Center the window (roughly)
 		posx = self.winfo_screenwidth()//2 - self.winfo_reqwidth()
@@ -32,6 +33,11 @@ class CSV_conversion_window(tk.Tk):
 		# output
 		tk.Button(self, text="Select Output CSV",command=self.select_output_csv, bg='#faf').pack(pady=10)
 		tk.Label(self, textvariable=self.output_path_display, bg='#aaf').pack(pady=5)
+		# interpolation interval
+		frame = tk.Frame(self, bg='#aaf')
+		tk.Label(frame, text='Interpolation interval (ms):', bg='#aaf').pack(side = tk.LEFT)
+		tk.Entry(frame, textvariable=self.interval, bg='#faf').pack(side = tk.RIGHT)
+		frame.pack(pady=5)
 		# convert
 		tk.Button(self, text="Convert", command=self.convert, bg='#faf').pack(pady=20)
 
@@ -68,6 +74,10 @@ class CSV_conversion_window(tk.Tk):
 		if not output_path:
 			messagebox.showerror("Error", "Please select an output file.")
 			return
+		
+		if not self.interval.get().isdigit():
+			messagebox.showerror("Error", "Interval must be an integer (ms).")
+			return
 
 		# Load the data
 		csv_file = self.load_csv(input_path)
@@ -82,10 +92,9 @@ class CSV_conversion_window(tk.Tk):
 		
 		def lerp(a, b, interp):
 			return a + (b-a) * interp
-		interval = 500 # ms
 		lerped_data = []
 		timestamps = [entry[0] for entry in data]
-		for tick in range(0, adjusted_timestamps[-1], interval):
+		for tick in range(0, adjusted_timestamps[-1], int(self.interval.get())):
 			last_timestamp = min(filter(lambda v, t=tick: (v <= t), timestamps))
 			next_timestamp = max(filter(lambda v, t=tick: (v >= t), timestamps))
 			last_index = timestamps.index(last_timestamp)
