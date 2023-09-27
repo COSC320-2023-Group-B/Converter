@@ -4,11 +4,14 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 
+def lerp(a, b, interp):
+	return a + (b-a) * interp
+
 class CSV_conversion_window(tk.Tk):
 	def __init__(self):
 		super().__init__()
 		self.title("CSV Converter")
-		self.geometry("400x300")
+		self.geometry("400x350")
 		self.configure(background="#aaf")
 
 		# Initialize variables to store conversion parameters
@@ -16,6 +19,7 @@ class CSV_conversion_window(tk.Tk):
 		self.output_path = tk.StringVar(value="")
 		self.input_path_display = tk.StringVar(value="")
 		self.output_path_display = tk.StringVar(value="")
+		self.is_interpolate = tk.BooleanVar(value=True)
 		self.interval = tk.StringVar(value="620")
 
 		# Center the window (roughly)
@@ -33,6 +37,8 @@ class CSV_conversion_window(tk.Tk):
 		# output
 		tk.Button(self, text="Select Output CSV",command=self.select_output_csv, bg='#faf').pack(pady=10)
 		tk.Label(self, textvariable=self.output_path_display, bg='#aaf').pack(pady=5)
+		# interpolation checkbox
+		tk.Checkbutton(self, variable=self.is_interpolate, text="Interpolate values", bg='#faf').pack(pady=10)
 		# interpolation interval
 		frame = tk.Frame(self, bg='#aaf')
 		tk.Label(frame, text='Interpolation interval (ms):', bg='#aaf').pack(side = tk.LEFT)
@@ -90,25 +96,25 @@ class CSV_conversion_window(tk.Tk):
 		# the [2:-1] is a shorthand, may expand out once we know exactly which data we required, for now we take all but the date and time
 		data = [[adjusted_timestamps[i]] + [int(csv_file[header][i]) for header in csv_file["headers"][2:-1]] for i in range(len(adjusted_timestamps))]
 		
-		def lerp(a, b, interp):
-			return a + (b-a) * interp
-		lerped_data = []
-		timestamps = [entry[0] for entry in data]
-		for tick in range(0, adjusted_timestamps[-1], int(self.interval.get())):
-			last_timestamp = min(filter(lambda v, t=tick: (v <= t), timestamps))
-			next_timestamp = max(filter(lambda v, t=tick: (v >= t), timestamps))
-			last_index = timestamps.index(last_timestamp)
-			next_index = timestamps.index(next_timestamp)
-			interp = (tick-last_timestamp)/(next_timestamp-last_timestamp)
-			lerp_data_entry = [tick]
-			for i in range(1, len(data[0])):
-				lerp_data_entry.append(int(lerp(data[last_index][i], data[next_index][i], interp)))
-			lerped_data.append(lerp_data_entry)
+		if self.is_interpolate.get():
+			lerped_data = []
+			timestamps = [entry[0] for entry in data]
+			for tick in range(0, adjusted_timestamps[-1], int(self.interval.get())):
+				last_timestamp = min(filter(lambda v, t=tick: (v <= t), timestamps))
+				next_timestamp = max(filter(lambda v, t=tick: (v >= t), timestamps))
+				last_index = timestamps.index(last_timestamp)
+				next_index = timestamps.index(next_timestamp)
+				interp = (tick-last_timestamp)/(next_timestamp-last_timestamp)
+				lerp_data_entry = [tick]
+				for i in range(1, len(data[0])):
+					lerp_data_entry.append(int(lerp(data[last_index][i], data[next_index][i], interp)))
+				lerped_data.append(lerp_data_entry)
+			data = lerped_data
 
 
 		# Save the data
 		header = ["Adjusted Timestamp"] + csv_file["headers"][2:-1]	# [2:-1] is shorthand, see above
-		self.save_csv(output_path, header, lerped_data)
+		self.save_csv(output_path, header, data)
 
 		messagebox.showinfo("Success", "Conversion completed successfully!")
 
