@@ -7,6 +7,24 @@ from tkinter import filedialog, messagebox
 def lerp(a, b, interp):
 	return a + (b-a) * interp
 
+def load_csv(filename):
+	csv_file = {}
+	with open(filename, 'r') as file:
+		reader = csv.reader(file)
+		csv_file["headers"] = next(reader)
+		for header in csv_file["headers"]:
+			csv_file[header] = []
+		for row in reader:
+			for value, header in zip(row, csv_file["headers"]):
+				csv_file[header].append(value)
+	return csv_file
+
+def save_csv(filename, header, data):
+	with open(filename, 'w', newline='') as file:
+		writer = csv.writer(file)
+		writer.writerow(header)
+		writer.writerows(data)
+
 class CSV_conversion_window(tk.Tk):
 	def __init__(self):
 		super().__init__()
@@ -64,6 +82,14 @@ class CSV_conversion_window(tk.Tk):
 		self.input_path.set(file_path)
 		self.input_path_display.set(os.path.basename(file_path))
 
+		# # Load the data to calculate the average interval
+		# csv_file = load_csv(file_path)
+		# timestamps = [int(t) for t in csv_file["TimeStamp (mS)"]]
+		# if len(timestamps) > 1:
+		# 	total_duration = timestamps[-1] - timestamps[0]
+		# 	average_interval = total_duration / (len(timestamps) - 1)
+		# 	self.interval.set(f"{average_interval:.2f}")
+
 	def select_output_csv(self):
 		file_path = filedialog.asksaveasfilename(title="Save CSV file", filetypes=[("CSV files", "*.csv")], defaultextension=".csv")
 		if file_path:
@@ -86,7 +112,7 @@ class CSV_conversion_window(tk.Tk):
 			return
 
 		# Load the data
-		csv_file = self.load_csv(input_path)
+		csv_file = load_csv(input_path)
 
 		# Extract and process the data
 		timestamps = [int(t) for t in csv_file["TimeStamp (mS)"]]
@@ -114,27 +140,9 @@ class CSV_conversion_window(tk.Tk):
 
 		# Save the data
 		header = ["Adjusted Timestamp"] + csv_file["headers"][2:-1]	# [2:-1] is shorthand, see above
-		self.save_csv(output_path, header, data)
+		save_csv(output_path, header, data)
 
 		messagebox.showinfo("Success", "Conversion completed successfully!")
-
-	def load_csv(self, filename):
-		csv_file = {}
-		with open(filename, 'r') as file:
-			reader = csv.reader(file)
-			csv_file["headers"] = next(reader)
-			for header in csv_file["headers"]:
-				csv_file[header] = []
-			for row in reader:
-				for value, header in zip(row, csv_file["headers"]):
-					csv_file[header].append(value)
-		return csv_file
-
-	def save_csv(self, filename, header, data):
-		with open(filename, 'w', newline='') as file:
-			writer = csv.writer(file)
-			writer.writerow(header)
-			writer.writerows(data)
 
 
 if __name__ == "__main__":
