@@ -3,6 +3,7 @@ import csv
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
+from labchart_converter import convert_CSV_To_Labchart
 
 def lerp(a, b, interp):
 	return a + (b-a) * interp
@@ -110,37 +111,10 @@ class CSV_conversion_window(tk.Tk):
 		if not self.interval.get().isdigit():
 			messagebox.showerror("Error", "Interval must be an integer (ms).")
 			return
-
-		# Load the data
-		csv_file = load_csv(input_path)
-
-		# Extract and process the data
-		timestamps = [int(t) for t in csv_file["TimeStamp (mS)"]]
-		adjusted_timestamps = [t - timestamps[0] for t in timestamps]
-
-		# Format the wanted data into a list of lists
-		# the [2:-1] is a shorthand, may expand out once we know exactly which data we required, for now we take all but the date and time
-		data = [[adjusted_timestamps[i]] + [int(csv_file[header][i]) for header in csv_file["headers"][2:-1]] for i in range(len(adjusted_timestamps))]
 		
-		if self.is_interpolate.get():
-			lerped_data = []
-			timestamps = [entry[0] for entry in data]
-			for tick in range(0, adjusted_timestamps[-1], int(self.interval.get())):
-				last_timestamp = min(filter(lambda v, t=tick: (v <= t), timestamps))
-				next_timestamp = max(filter(lambda v, t=tick: (v >= t), timestamps))
-				last_index = timestamps.index(last_timestamp)
-				next_index = timestamps.index(next_timestamp)
-				interp = (tick-last_timestamp)/(next_timestamp-last_timestamp)
-				lerp_data_entry = [tick]
-				for i in range(1, len(data[0])):
-					lerp_data_entry.append(int(lerp(data[last_index][i], data[next_index][i], interp)))
-				lerped_data.append(lerp_data_entry)
-			data = lerped_data
+		inperpolation = int(self.interval.get()) if self.is_interpolate.get() else None
 
-
-		# Save the data
-		header = ["Adjusted Timestamp"] + csv_file["headers"][2:-1]	# [2:-1] is shorthand, see above
-		save_csv(output_path, header, data)
+		convert_CSV_To_Labchart(input_path, output_path, inperpolation)
 
 		messagebox.showinfo("Success", "Conversion completed successfully!")
 

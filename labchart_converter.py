@@ -84,6 +84,13 @@ def get_header_information(loaded_csv, lerp_interval):
 	
 	return header_field
 
+def find_closest_timestamps(timestamps: list[int], time: int):
+	last_timestamp = max(timestamps, key=lambda t: t * (t < time))
+	last_index = timestamps.index(last_timestamp)
+	next_index = last_index + 1
+	next_timestamp = timestamps[next_index]
+
+	return last_timestamp, next_timestamp
 
 def lerp_data(loaded_csv, lerp_interval):
 	csv_headers = loaded_csv["headers"]
@@ -102,8 +109,8 @@ def lerp_data(loaded_csv, lerp_interval):
 		lerped_data = []
 		timestamps = [entry[0] for entry in data]
 		for tick in range(0, adjusted_timestamps[-1], lerp_interval):
-			last_timestamp = min(filter(lambda v, t=tick: (v <= t), timestamps))
-			next_timestamp = max(filter(lambda v, t=tick: (v >= t), timestamps))
+			last_timestamp, next_timestamp = find_closest_timestamps(timestamps, tick)
+			
 			last_index = timestamps.index(last_timestamp)
 			next_index = timestamps.index(next_timestamp)
 			last_row = data[last_index]
