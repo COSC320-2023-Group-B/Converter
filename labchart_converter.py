@@ -5,9 +5,9 @@ DELIMITER = '\t'
 NEW_LINE = '\n'
 HEADER_FIELD_NAMES = (
 	"Interval",
-	"ExcelDateTime",
-	"TimeFormat",
-	"DateFormat",
+	# "ExcelDateTime", # these are for labchart not us
+	# "TimeFormat",
+	# "DateFormat",
 	"ChannelTitle",
 	"Range",
 	"UnitName",
@@ -40,7 +40,7 @@ def load_csv(filename):
 					csv_file[header].append(value)
 		return csv_file
 
-def convert_CSV_To_Labchart(input_filename, output_filename, lerp_interval=500):
+def convert_CSV_To_Labchart(input_filename, output_filename, lerp_interval=20):
 	if not valid_csv(input_filename):
 		raise RuntimeError("CSV is not of correct format")
 	
@@ -56,26 +56,31 @@ def convert_CSV_To_Labchart(input_filename, output_filename, lerp_interval=500):
 def get_header_information(loaded_csv, lerp_interval):
 	header_field = {
 		"Interval": (f"{lerp_interval} ms",),
-		"ExcelDateTime": ("GET", "DATE TIME"),
-		"TimeFormat": ("StartOfBlock",),
-		"DateFormat": (), # dont know how, something with the date time
+		# we dont need these keywords?
+		# "ExcelDateTime": ("GET", "DATE TIME"),
+		# "TimeFormat": ("StartOfBlock",),
+		# "DateFormat": (), # dont know how, something with the date time
 		"ChannelTitle": (
 			"Systolic",
 			"Diastolic",
 			"MAP",
 			"HeartRate",
 			"Respiration",
-			"AS",
-			"SQE"
+			"Pulse Pressure",
+			# "AS",
+			# "SQE"
 		),
 		"Range": (
-			f"{1.0} mmHg",
-			f"{1.0} mmHg",
-			f"{1.0} mmHg",
-			f"{1.0} bpm",
-			f"{1.0} Bpm",
-			f"{1.0} AS",	# Fix This
-			f"{1.0} SQE",	# Fix This
+			# PROBLEM: mmHg is a unit of pressure
+			# labchart imports might not accept thses units
+			f"{10.0} mmHg",
+			f"{10.0} mmHg",
+			f"{10.0} mmHg",
+			f"{10.0} BPM",
+			f"{10.0} BPM",
+			f"{10.0} mmHg",
+			# f"{10} AS",	# Fix This
+			# f"{10} SQE",	# Fix This
 		),
 	}
 	# fill with stars, gonna have to fix this
@@ -99,11 +104,13 @@ def lerp_data(loaded_csv, lerp_interval):
 	adjusted_timestamps = [t - timestamps[0] for t in timestamps]
 
 	# the headers in data, and the order there in
-	wanted_headers = ["Systolic (mmHg)", "Diastolic (mmHg)", "MAP (mmHg)", "HeartRate (bpm)", "Respiration (Bpm)", "AS", "SQE"]
+	wanted_headers = ["Systolic (mmHg)", "Diastolic (mmHg)", "MAP (mmHg)", "HeartRate (bpm)", "Respiration (Bpm)"]
 
 	# dont remove the date to keep track of positions
 	data = [[adjusted_timestamps[i]] + [int(loaded_csv[header][i]) for header in wanted_headers] for i in range(len(adjusted_timestamps))]
-
+	
+	# add pulse pressure to end of line
+	data = [row + [row[1] - row[2]] for row in data]
 
 	if lerp_interval is not None:
 		lerped_data = []
@@ -121,7 +128,6 @@ def lerp_data(loaded_csv, lerp_interval):
 		data = lerped_data
 	
 	return data
-
 
 def valid_csv(filename):
 	# Validate header to determine if valid file

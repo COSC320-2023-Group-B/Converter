@@ -5,26 +5,6 @@ from tkinter import filedialog, messagebox
 
 from labchart_converter import convert_CSV_To_Labchart
 
-def lerp(a, b, interp):
-	return a + (b-a) * interp
-
-def load_csv(filename):
-	csv_file = {}
-	with open(filename, 'r') as file:
-		reader = csv.reader(file)
-		csv_file["headers"] = next(reader)
-		for header in csv_file["headers"]:
-			csv_file[header] = []
-		for row in reader:
-			for value, header in zip(row, csv_file["headers"]):
-				csv_file[header].append(value)
-	return csv_file
-
-def save_csv(filename, header, data):
-	with open(filename, 'w', newline='') as file:
-		writer = csv.writer(file)
-		writer.writerow(header)
-		writer.writerows(data)
 
 class CSV_conversion_window(tk.Tk):
 	def __init__(self):
@@ -56,7 +36,7 @@ class CSV_conversion_window(tk.Tk):
 		tk.Button(self, text="Select Input CSV", command=self.select_input_csv).pack(pady=10)
 		tk.Label(self, textvariable=self.input_path_display, bg='#ccc').pack(pady=5)
 		# output
-		tk.Button(self, text="Select Output CSV",command=self.select_output_csv).pack(pady=10)
+		tk.Button(self, text="Select Output File",command=self.select_output_csv).pack(pady=10)
 		tk.Label(self, textvariable=self.output_path_display, bg='#ccc').pack(pady=5)
 		# interpolation checkbox
 		tk.Checkbutton(self, variable=self.is_interpolate, text="Interpolate values").pack(pady=10)
