@@ -31,7 +31,8 @@ class CSV_conversion_window(tk.Tk):
 		super().__init__()
 		self.title("CSV Converter")
 		self.geometry("400x350")
-		self.configure(background="#aaf")
+		self.wm_resizable(False, False)
+		# self.configure(background="#aaf")
 
 		# Initialize variables to store conversion parameters
 		self.input_path = tk.StringVar(value="")
@@ -51,20 +52,20 @@ class CSV_conversion_window(tk.Tk):
 
 	def create_widgets(self):
 		# input
-		tk.Button(self, text="Select Input CSV", command=self.select_input_csv, bg='#faf').pack(pady=10)
-		tk.Label(self, textvariable=self.input_path_display, bg='#aaf').pack(pady=5)
+		tk.Button(self, text="Select Input CSV", command=self.select_input_csv).pack(pady=10)
+		tk.Label(self, textvariable=self.input_path_display).pack(pady=5)
 		# output
-		tk.Button(self, text="Select Output CSV",command=self.select_output_csv, bg='#faf').pack(pady=10)
-		tk.Label(self, textvariable=self.output_path_display, bg='#aaf').pack(pady=5)
+		tk.Button(self, text="Select Output CSV",command=self.select_output_csv).pack(pady=10)
+		tk.Label(self, textvariable=self.output_path_display).pack(pady=5)
 		# interpolation checkbox
-		tk.Checkbutton(self, variable=self.is_interpolate, text="Interpolate values", bg='#faf').pack(pady=10)
+		tk.Checkbutton(self, variable=self.is_interpolate, text="Interpolate values").pack(pady=10)
 		# interpolation interval
-		frame = tk.Frame(self, bg='#aaf')
-		tk.Label(frame, text='Interpolation interval (ms):', bg='#aaf').pack(side = tk.LEFT)
-		tk.Entry(frame, textvariable=self.interval, bg='#faf').pack(side = tk.RIGHT)
+		frame = tk.Frame(self)
+		tk.Label(frame, text='Interpolation interval (ms):').pack(side = tk.LEFT)
+		tk.Entry(frame, textvariable=self.interval).pack(side = tk.RIGHT)
 		frame.pack(pady=5)
 		# convert
-		tk.Button(self, text="Convert", command=self.convert, bg='#faf').pack(pady=20)
+		tk.Button(self, text="Convert", command=self.convert).pack(pady=20)
 
 	def select_input_csv(self):
 		file_path = filedialog.askopenfilename(title="Select a CSV file", filetypes=[("CSV files", "*.csv")])
@@ -92,7 +93,7 @@ class CSV_conversion_window(tk.Tk):
 		# 	self.interval.set(f"{average_interval:.2f}")
 
 	def select_output_csv(self):
-		file_path = filedialog.asksaveasfilename(title="Save CSV file", filetypes=[("CSV files", "*.csv")], defaultextension=".csv")
+		file_path = filedialog.asksaveasfilename(title="Save text file", filetypes=[("Text files", "*.txt"), ("CSV files", "*.csv")], defaultextension=".txt")
 		if file_path:
 			self.output_path.set(file_path)
 			self.output_path_display.set(os.path.basename(file_path))
