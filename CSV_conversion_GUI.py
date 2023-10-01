@@ -31,14 +31,15 @@ class CSV_conversion_window(tk.Tk):
 		super().__init__()
 		self.title("CSV Converter")
 		self.geometry("400x350")
+		self.configure(background="#ccc")
 		self.wm_resizable(False, False)
 		# self.configure(background="#aaf")
 
 		# Initialize variables to store conversion parameters
 		self.input_path = tk.StringVar(value="")
 		self.output_path = tk.StringVar(value="")
-		self.input_path_display = tk.StringVar(value="")
-		self.output_path_display = tk.StringVar(value="")
+		self.input_path_display = tk.StringVar(value="<No File Selected>")
+		self.output_path_display = tk.StringVar(value="<No File Selected>")
 		self.is_interpolate = tk.BooleanVar(value=True)
 		self.interval = tk.StringVar(value="620")
 
@@ -53,10 +54,10 @@ class CSV_conversion_window(tk.Tk):
 	def create_widgets(self):
 		# input
 		tk.Button(self, text="Select Input CSV", command=self.select_input_csv).pack(pady=10)
-		tk.Label(self, textvariable=self.input_path_display).pack(pady=5)
+		tk.Label(self, textvariable=self.input_path_display, bg='#ccc').pack(pady=5)
 		# output
 		tk.Button(self, text="Select Output CSV",command=self.select_output_csv).pack(pady=10)
-		tk.Label(self, textvariable=self.output_path_display).pack(pady=5)
+		tk.Label(self, textvariable=self.output_path_display, bg='#ccc').pack(pady=5)
 		# interpolation checkbox
 		tk.Checkbutton(self, variable=self.is_interpolate, text="Interpolate values").pack(pady=10)
 		# interpolation interval
