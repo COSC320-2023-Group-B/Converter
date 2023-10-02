@@ -21,7 +21,7 @@ class CSV_conversion_window(tk.Tk):
 		self.input_path_display = tk.StringVar(value="<No File Selected>")
 		self.output_path_display = tk.StringVar(value="<No File Selected>")
 		self.is_interpolate = tk.BooleanVar(value=True)
-		self.interval = tk.StringVar(value="620")
+		self.interval = tk.StringVar(value="20")
 
 		# Center the window (roughly)
 		posx = self.winfo_screenwidth()//2 - self.winfo_reqwidth()
