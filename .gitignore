@@ -215,3 +215,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# unignore
+!CaretakerConverter_windows.exe
