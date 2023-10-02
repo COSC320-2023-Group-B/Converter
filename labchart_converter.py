@@ -16,7 +16,7 @@ HEADER_FIELD_NAMES = (
 )
 
 def lerp(a, b, interp):
-	return a + (b-a) * interp
+	return int(a + (b-a) * interp)
 def lerp_values_by_time(t1, v1, t2, v2, t3):
 	interp = (t3 - t1) / (t2 - t1)
 	return lerp(v1, v2, interp)
